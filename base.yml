@@ -1,14 +1,7 @@
 ---
-- name: Common tasks FTW
-  hosts: all
-  become: yes
-  pre_tasks:
-    - name: Set hostname
-      hostname: name={{inventory_hostname}}
-
-- name: Base bamboo service
+- name: deploy service(s)
   hosts: base
   become: yes
   roles:
-    - { role: nodejs, tags: nodejs }
-    - { role: bamboo, tags: bamboo }
+    - { role: img-panda, tags: img-panda }
+    - { role: smart-panda, tags: smart-panda }

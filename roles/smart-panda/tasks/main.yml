@@ -1,0 +1,30 @@
+---
+- name: copy the smart-panda app                    # Deploy the app tp the desired location
+  copy: 
+    src: smart-panda
+    dest: /tmp/
+    owner: root
+    group: root
+    mode: 0755
+    force: yes                                      # We want to override with newest version
+
+- name: Install pm2
+  npm:
+    name: pm2
+    global: yes
+    production: yes
+
+- name: Running NPM install
+  npm: 
+    path: /tmp/smart-panda
+
+- name: Stop APP
+  command: pm2 stop app
+  args:
+    chdir: /tmp/smart-panda
+  ignore_errors: yes
+
+- name: Start APP
+  command: pm2 start smart-panda.js --name app
+  args:
+    chdir: /tmp/smart-panda

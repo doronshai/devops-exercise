@@ -1,0 +1,48 @@
+---
+
+- name: create img-panda folder                     # Create the img-panda folder under /tmp in case it is missing
+  file:
+    path: /tmp/img-panda
+    state: directory
+    mode: 0755
+    
+- name: deploy img-panda app                        # Deploy the img-panda service
+  copy: 
+    src: app/img-panda.py 
+    dest: /tmp/img-panda/img-panda.py
+    owner: root
+    group: root
+    mode: 0755
+    force: no
+
+- name: deploy resources folder                     # Deploy the images into the /tmp/img-panda/resources
+  copy: 
+    src: resources
+    dest: /tmp/img-panda
+    owner: root
+    group: root
+    mode: 0644
+    force: no
+
+- include: install_pip.yml                          # Install if missing
+
+- name: check to see if flask is already installed  # Check if flask is installed (could be done with the next)
+  command: "pip list | grep -i flask"               # Step as a seperate role, but to make it simpler I placed
+  ignore_errors: true                               # it here
+  register: flask_is_installed
+  changed_when: false
+
+- name: install flask using pip                     # Instal in case missing
+  command: "pip install flask"
+  when: flask_is_installed.rc != 0
+
+- name: run img-panda.py                            # Run the service in background
+  shell: python img-panda.py &
+  args:
+    chdir: /tmp/img-panda
+  register: output
+
+- name: Check for errors                            # Fail the deployment if there are issues with the service
+  fail:
+    msg: "img-panda is not running well"
+  when: output.stdout.find('Running on') != -1
